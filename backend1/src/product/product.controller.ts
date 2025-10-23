@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, NotFoundException } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ClientProxy } from '@nestjs/microservices';
+import { log } from 'console';
 
 @Controller('product')
 export class ProductController {
@@ -17,9 +18,28 @@ export class ProductController {
     return product
   }
 
+  @Post(":id/like")
+  async likeBoss(@Param("id") id:string){
+    let product = await this.productService.findOne(+id)
+    if(!product){
+      throw new NotFoundException("bunday product yoq")
+    }
+    // product.likes +=1
+    
+    return await this.productService.update(+id, { likes: product.likes + 1 })
+  }
+
   @Get()
   findAll() {
-    this.clientService.emit("hello", "Hello from another server");
+    this.clientService.emit("hello", "Hello from another server")
+    .subscribe((res) => {
+      console.log(res);
+    });
+    this.clientService.send("salom", "salom from another server")
+      .subscribe((res) => {
+        console.log(res);
+      });
+
     return this.productService.findAll();
   }
 
@@ -38,7 +58,9 @@ export class ProductController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const deleted = await this.productService.remove(+id);
-    this.clientService.emit("product_deleted", deleted)
+    if (deleted > 0) {
+      this.clientService.emit("product_deleted", deleted)
+    }
     return deleted
   }
 }

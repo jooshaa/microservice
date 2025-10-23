@@ -2,25 +2,28 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { EventPattern, Payload } from '@nestjs/microservices';
+import { Ctx, EventPattern, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 
 @Controller()
 export class Product_Micro_Controller {
   constructor(private readonly productService: ProductService) {}
 
 
-  // @EventPattern("hello")
-  // async hello(data: string){
-  //   console.log(data)
-  // }
+  @EventPattern("hello")
+  async hello(data: string){
+    console.log(data)
+    return "hello yetb keldi"
+  }
+
+  @MessagePattern("salom")
+  async salom(@Payload() data: string, @Ctx() context: RmqContext){
+    console.log(data);
+    return "salom yetb keldi"
+    
+  }
 
 
   @EventPattern("product_created")
-  async product_created(data: string) {
-    console.log(data)
-  }
-
-  @Post()
   create(@Payload() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
   }
@@ -36,20 +39,12 @@ export class Product_Micro_Controller {
   }
 
   @EventPattern("product_updated")
-  async product_updated(data: string) {
-    console.log(data)
-  }
-  @Patch(':id')
-  update(@Param('id') id: string, @Payload() updateProductDto: UpdateProductDto) {
+  update(@Payload('id') id: string, @Payload() updateProductDto: UpdateProductDto) {
     return this.productService.update(+id, updateProductDto);
   }
 
   @EventPattern("product_deleted")
-  async product_deleted(data: string) {
-    console.log(data)
-  }
-  @Delete(':id')
-  remove( @Payload("id") id: string) {
+  remove( @Payload() id: string) {
     return this.productService.remove(+id);
   }
 }

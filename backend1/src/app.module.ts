@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductModule } from './product/product.module';
+import { CategoryModule } from './category/category.module';
 
 
 @Module({
@@ -13,7 +14,7 @@ import { ProductModule } from './product/product.module';
     database: "micro",
     autoLoadEntities: true,
     synchronize: true,
-  }), ProductModule],
+  }), ProductModule, CategoryModule],
   controllers: [],
   providers: [],
 })
